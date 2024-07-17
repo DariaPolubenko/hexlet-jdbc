@@ -1,7 +1,9 @@
 package code;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.SQLOutput;
 
 public class Application {
     public static void main(String[] args) throws SQLException {
@@ -13,24 +15,41 @@ public class Application {
                 statement.execute(sql);
             }
 
-            var sql2 = "INSERT INTO users (username, phone) VALUES ('Tom', '123456789')";
-            try (var statement2 = conn.createStatement()) {
-                statement2.executeUpdate(sql2);
+            var sql2 = "INSERT INTO users (username, phone) VALUES (?, ?)";
+            try (var preparedStatement = conn.prepareStatement(sql2)) {
+                preparedStatement.setString(1, "Tommy");
+                preparedStatement.setString(2, "123456789");
+                preparedStatement.executeUpdate();
+
+                preparedStatement.setString(1, "Rob");
+                preparedStatement.setString(2, "987654321");
+                preparedStatement.executeUpdate();
             }
 
-            var sql3 = "INSERT INTO users (username, phone) VALUES ('Rob', '987654321')";
-            try (var statement3 = conn.createStatement()) {
-                statement3.executeUpdate(sql3);
+            dataOutput(conn);
+
+            var sql3 = "DELETE FROM users WHERE username = ?;";
+            try (var preparedStatement2 = conn.prepareStatement(sql3))
+            {
+                preparedStatement2.setString(1, "Rob");
+                preparedStatement2.executeUpdate();
             }
 
-            var sql4 = "SELECT * FROM users";
-            try (var statement4 = conn.createStatement()) {
-                var resultSet = statement4.executeQuery(sql4);
-                while (resultSet.next()) {
-                    System.out.printf("%s %s\n",
-                            resultSet.getString("username"),
-                            resultSet.getString("phone"));
-                }
+            dataOutput(conn);
+        }
+    }
+
+    public static void dataOutput(Connection conn) throws SQLException {
+        var sql = "SELECT * FROM users";
+
+        try (var statement3 = conn.createStatement()) {
+            var resultSet = statement3.executeQuery(sql);
+            System.out.println("Data:");
+
+            while (resultSet.next()) {
+                System.out.printf("%s %s\n",
+                        resultSet.getString("username"),
+                        resultSet.getString("phone"));
             }
         }
     }
