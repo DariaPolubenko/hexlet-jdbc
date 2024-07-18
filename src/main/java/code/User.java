@@ -1,12 +1,12 @@
 package code;
 
 public class User {
-    private int id;
+    private Long id;
     private String username;
     private String phone;
 
-
-    User() {}
+    User() {
+    }
 
     User (String username, String phone) {
         this.username = username;
@@ -22,7 +22,7 @@ public class User {
         return phone;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -35,8 +35,7 @@ public class User {
         this.username = username;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
-
 }
