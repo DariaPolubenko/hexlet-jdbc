@@ -1,9 +1,9 @@
 package code;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.SQLOutput;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class Application {
     public static void main(String[] args) throws SQLException {
@@ -15,42 +15,24 @@ public class Application {
                 statement.execute(sql);
             }
 
-            var sql2 = "INSERT INTO users (username, phone) VALUES (?, ?)";
-            try (var preparedStatement = conn.prepareStatement(sql2)) {
-                preparedStatement.setString(1, "Tommy");
-                preparedStatement.setString(2, "123456789");
-                preparedStatement.executeUpdate();
+            var dao = new UserDAO(conn);
+            var user = new User("Tommy", "123456789");
 
-                preparedStatement.setString(1, "Rob");
-                preparedStatement.setString(2, "987654321");
-                preparedStatement.executeUpdate();
-            }
+            System.out.println("ID is " + user.getId());
+            dao.save(user);
+            System.out.println("ID after save is " + user.getId());
 
-            dataOutput(conn);
+            var findUser = dao.find(user.getId()).get();
+            var result = user.getId() == findUser.getId();
+            System.out.println("Equal after find is " + result);
 
-            var sql3 = "DELETE FROM users WHERE username = ?;";
-            try (var preparedStatement2 = conn.prepareStatement(sql3))
-            {
-                preparedStatement2.setString(1, "Rob");
-                preparedStatement2.executeUpdate();
-            }
+            var user2 = new User ("Rob", "987654321");
+            dao.save(user2);
+            dao.dataOutput();
 
-            dataOutput(conn);
-        }
-    }
-
-    public static void dataOutput(Connection conn) throws SQLException {
-        var sql = "SELECT * FROM users";
-
-        try (var statement3 = conn.createStatement()) {
-            var resultSet = statement3.executeQuery(sql);
-            System.out.println("Data:");
-
-            while (resultSet.next()) {
-                System.out.printf("%s %s\n",
-                        resultSet.getString("username"),
-                        resultSet.getString("phone"));
-            }
+            dao.delete(user.getId());
+            user.setId(null);
+            dao.dataOutput();
         }
     }
 }
